@@ -1,0 +1,127 @@
+## Modules
+
+- A medule is simplely a folder with a terraform code inside
+- It helps use extend the functionality of terraform 
+- Enables use to resuse codes
+
+#Create an ec2 resource
+#To pass anything through module we have to set a variable
+
+
+```
+variable "ec2name"{
+    type = string
+}
+
+resource "aws_instance" "ec2" {
+  ami           = "ami-0230bd60aa48260c6"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = var.ec2name
+  }
+}
+```
+
+#Then create the module
+
+```
+provider "aws" {
+    region = "us-east-1"
+}
+
+module "ec2module" {
+
+    #the path will be the ec2 folder
+    source = "./ec2" 
+
+    #This is the name from the ec2 varaible
+    ec2name = "Name from Module" 
+}
+```
+
+## Output with modules
+
+#This is handy when you are working
+#with other modules, especially third party modules,
+#and you have attributes you need to access.
+
+#To do this we need to set output  set inside modules that has that attributesset.
+#ec2.tf
+
+```
+variable "ec2name"{
+    type = string
+}
+
+resource "aws_instance" "ec2" {
+  ami           = "ami-0230bd60aa48260c6"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = var.ec2name
+  }
+}
+
+#This is the decleared output
+
+output "instance_id" {
+    value = aws_instance.ec2.id
+}
+
+```
+
+
+#next go to the module main.tf and refrence the output
+#by creating another output
+
+```
+provider "aws" {
+    region = "us-east-1"
+}
+
+module "ec2module" {
+    source = "./ec2"
+    ec2name = "Name from Module" 
+}
+
+#this is the ec2 module output
+#the value is module.modulename.ec2outputname
+
+output "ec2_module_output" {
+  value = module.ec2module.instance_id
+}
+```
+
+## Terraform registry (industry Standard)
+https://registry.terraform.io/
+
+#Terraform Registry is a platform where HashiCorp 
+#has modules that we can use.
+#Click on browser modules
+
+#usage
+https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest
+
+#needs more research
+
+```
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+
+  name = "my-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+
+  enable_nat_gateway = true
+  enable_vpn_gateway = true
+
+  tags = {
+    Terraform = "true"
+    Environment = "dev"
+  }
+}
+```
