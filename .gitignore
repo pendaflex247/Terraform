@@ -36,4 +36,4 @@ terraform.rc
 
 # ignore Terraform Lock file
 .terraform.lock.hcl
-*/project-s3-static-website/*
+/project-s3-static-website/*
